@@ -24,12 +24,6 @@
     msg: >
       httpd service is {{ 'running' if httpd_service_check.state == 'started' else 'not running' }}.
 
-- name: Check disk space utilization
-  ansible.builtin.command:
-    cmd: "ansible.builtin.setup"
-  register: disk_space
-  changed_when: no
-
 - name: Check if available memory is above 500 mb
   ansible.builtin.debug:
     msg: "Disks space for the {{ item.mount }} is {{ item.size_available / (1024 * 1024) }} MBytes"
