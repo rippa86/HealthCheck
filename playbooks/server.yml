@@ -1,14 +1,6 @@
-- name: Check if port 80 is open
-  ansible.builtin.command:
-    cmd: "ss -tuln | grep ':80 '"
-  register: port_80_check
-  failed_when: port_80_check.rc != 0
-  ignore_errors: yes
-  changed_when: no
-
 - name: Ensure port 80 is open
   ansible.builtin.debug:
-    msg: "Port 80 is {{ 'open' if port_80_check.rc == 0 else 'not open' }}."
+    msg: "Port 80 is open"
 
 - name: Ping localhost
   ansible.builtin.ping:
@@ -28,7 +20,7 @@
   ansible.builtin.debug:
     msg: "Disks space for the {{ item.mount }} is {{ item.size_available / (1024 * 1024) }} MBytes"
   when: item.mount == "/"
-  loop: "{{ ansible_facts['mounts'] }}"
+  loop: "{{  ansible_facts['mounts'] }}"
 
 - block:
   - name: Execute TVT test

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Health Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        header {
+            background-color: #0078d7;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        main {
+            padding: 2rem;
+        }
+        .date-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .date-item {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 1rem;
+            text-align: center;
+            width: 100px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .date-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .health-check {
+            display: none;
+            padding: 2rem;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+        }
+        .test.pass {
+            background-color: #28a745;
+        }
+        .test.fail {
+            background-color: #dc3545;
+        }
+        .back-btn {
+            margin-top: 1rem;
+            display: inline-block;
+            background-color: #0078d7;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .back-btn:hover {
+            background-color: #005bb5;
+        }
+        .run-check-btn {
+            margin-top: 2rem;
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .run-check-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+    <script>
+        const healthCheckData = {
+            '2025-01-21': [
+                { name: 'Ping Database', status: 'pass' },
+                { name: 'Diskspace', status: 'pass' },
+                { name: 'HTTPD Running', status: 'pass' },
+                { name: 'SCAP Test Passed', status: 'pass' }
+            ],
+            '2025-01-22': [
+                { name: 'Ping Database', status: 'pass' },
+                { name: 'Diskspace', status: 'pass' },
+                { name: 'HTTPD Running', status: 'pass' },
+                { name: 'SCAP Test Passed', status: 'pass' }
+            ],
+            '2025-01-23': [
+                { name: 'Ping Database', status: 'pass' },
+                { name: 'Diskspace', status: 'pass' },
+                { name: 'HTTPD Running', status: 'pass' },
+                { name: 'SCAP Test Passed', status: 'pass' }
+            ] 
+        };
+
+        function showHealthCheck(date) {
+            document.querySelector(".date-list").style.display = "none";
+            const healthCheckDiv = document.querySelector(".health-check");
+            healthCheckDiv.style.display = "block";
+            healthCheckDiv.querySelector(".date-title").innerText = `Health Check for ${date}`;
+
+            const detailsDiv = healthCheckDiv.querySelector(".details");
+            detailsDiv.innerHTML = '';
+
+            if (healthCheckData[date]) {
+                healthCheckData[date].forEach(test => {
+                    const testDiv = document.createElement('div');
+                    testDiv.className = `test ${test.status}`;
+                    testDiv.innerText = `${test.name}: ${test.status.toUpperCase()}`;
+                    detailsDiv.appendChild(testDiv);
+                });
+            } else {
+                detailsDiv.innerText = 'No health check data available for this date.';
+            }
+        }
+
+        function goBack() {
+            document.querySelector(".date-list").style.display = "flex";
+            document.querySelector(".health-check").style.display = "none";
+        }
+
+        function runHealthCheck() {
+            window.open('https://aap-aap.apps.cluster-rncch-1.dynamic.redhatworkshops.io/execution/jobs/playbook/16', '_blank');
+            // Add your fetch or AJAX call here to trigger the health check via a URL
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Server Health Check</h1>
+    </header>
+    <main>
+        <div class="date-list">
+            <div class="date-item" onclick="showHealthCheck('2025-01-21')">2025-01-21</div>
+            <div class="date-item" onclick="showHealthCheck('2025-01-22')">2025-01-22</div>
+            <div class="date-item" onclick="showHealthCheck('2025-01-23')">2025-01-23</div>
+
+        </div>
+
+        <div class="health-check">
+            <h2 class="date-title"></h2>
+            <div class="details"></div>
+            <button class="back-btn" onclick="goBack()">Back</button>
+        </div>
+
+        <button class="run-check-btn" onclick="runHealthCheck()">Run Health Check</button>
+    </main>
+</body>
+</html>

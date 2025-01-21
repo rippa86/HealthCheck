@@ -31,6 +31,11 @@
     ansible.builtin.template:
       src: index.html.j2
       dest: /var/www/html/index.html
+      
+  - name: add index.html
+    ansible.builtin.template:
+      src: healthcheck.html.j2
+      dest: /var/www/html/healthcheck.html
 
   - name: add rippademo.conf
     ansible.builtin.template:
