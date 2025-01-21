@@ -1,0 +1,38 @@
+---
+- name: Set up SSL and point to new certs
+  hosts: web_server 
+
+  tasks:
+  - name: enable EPEL repo
+    ansible.builtin.dnf:
+      disable_gpg_check: true
+      name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm"
+      state: present
+
+  - name: install open ssl
+    ansible.builtin.dnf: 
+      name: 
+        - snapd
+        - mod_ssl
+        - httpd
+      state: present
+
+  - name: add to path
+    ansible.builtin.command: "systemctl enable --now snapd.socket"
+    register: certbot_result
+
+  - name: add to path
+    ansible.builtin.command: "ln -s /var/lib/snapd/snap /snap"
+    register: certbot_result
+
+  - ansible.builtin.pause:
+      seconds: 15
+    
+    
+  - name: Install certbot
+    ansible.builtin.command: "snap install --classic certbot"
+    register: certbot_result
+
+  - name: add to path
+    ansible.builtin.command: "ln -s /snap/bin/certbot /usr/bin/certbot"
+    register: certbot_result

@@ -1,0 +1,61 @@
+---
+- name: create rhel9 ec2 instance
+  hosts: localhost
+
+  tasks:
+  - name: start an instance with a public IP address
+    amazon.aws.ec2_instance:
+      name: "{{ vm_name }}"
+      key_name: "{{ key_name }}"
+      vpc_subnet_id: "{{ subnet_id }}"
+      instance_type: t2.small
+      security_group: "{{ security_group }}"
+      network:
+        assign_public_ip: true
+      image_id: "{{ rhel_ami }}"
+      region: "{{ aws_region }}"
+      tags:
+        type: web_servers
+    delegate_to: localhost
+    register: info
+  
+  - name: add new DNS record
+    ansible.builtin.uri:
+      url: "https://porkbun.com/api/json/v3/dns/create/{{ domain_name }}"
+      method: POST
+      return_content: true
+      body:
+        secretapikey: "{{ dns_secret_key }}"
+        apikey: "{{ dns_api_key }}"
+        name: "{{ vm_name }}"
+        type: A
+        content: "{{ info.instances[0].public_ip_address }}"
+        ttl: 600
+      body_format: json
+    register: results
+  
+  - name: add host to controller
+    ansible.controller.bulk_host_create:
+      controller_host: "{{ aap_url }}"
+      controller_username: "{{ aap_user }}"
+      controller_password: "{{ aap_passwd }}"
+      inventory: "web_server"
+      hosts:
+        - name: "{{ info.instances[0].public_ip_address }}"
+          groups: 
+            - "web_server"
+      #     description: "Host 1"
+      #     variables: |
+      #       ansible_user: ec2_user
+      #       ip_address: "{{ info.instances[0].public_ip_address }}"
+      #       domain_name: "{{ domain_name }}"
+      #       vm_name: "{{ vm_name }}"
+      # state: present
+
+  - name: Wait 30 seconds for instance to be listed
+    ansible.builtin.wait_for:
+      timeout: 30
+
+  
+  
+    

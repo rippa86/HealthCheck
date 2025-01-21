@@ -1,0 +1,37 @@
+---
+- name: renew certs using certbot role
+  hosts: web_server
+
+  tasks:
+  # - name: enable EPEL repo
+  #   ansible.builtin.dnf:
+  #     disable_gpg_check: true
+  #     name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm"
+  #     state: present
+      
+  # - name: run certbot role
+  #   include_role:
+  #     name: geerlingguy.certbot
+
+  # - name: Ensure Apache is running
+  #   ansible.builtin.service:
+  #     name: httpd
+  #     state: started
+  #     enabled: yes
+
+  - name: Obtain SSL certificate from Let's Encrypt
+    ansible.builtin.command: "certbot --apache -n -d {{ dns_name }} --non-interactive --agree-tos --email rippas@{{ dns_name }}"
+    register: certbot_result
+
+  - name: Debug Certbot result
+    ansible.builtin.debug:
+      var: certbot_result
+
+  - name: Restart Apache to apply new certificate
+    ansible.builtin.service:
+      name: httpd
+      state: restarted    
+  
+  # - name: force renew
+  #   ansible.builtin.shell: sudo certbot renew --force-renewal
+  #   tags: force

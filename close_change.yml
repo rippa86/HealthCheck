@@ -1,0 +1,63 @@
+---
+- name: ServiceNow Close Change
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  
+  tasks:
+  # - name: Update ServiceNow ticket to indicate start
+  #   servicenow.itsm.api:
+  #     instance:
+  #       host: "{{ instance }}"
+  #       username: "{{ username }}"
+  #       password: "{{ password }}"
+  #     resource: change
+  #     action: patch
+  #     sys_id: "{{ chg_id }}"
+  #     data:
+  #       work_notes: "AAP is handling renewal. . . "
+  #   register: snow_var
+    
+  # - ansible.builtin.set_fact:
+  #     chg_number: "{{ snow_var.record.number }}"
+  - name: Update ServiceNow ticket to review
+    servicenow.itsm.change_request:
+      instance:
+        host: "{{ instance }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+      type: normal
+      state: review
+      number: "{{ chg_number }}"
+    register: change_result
+    ignore_errors: yes
+    
+  - name: Update ServiceNow ticket to close
+    servicenow.itsm.change_request:
+      instance:
+        host: "{{ instance }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+      type: normal
+      state: closed
+      close_code: "successful"
+      close_notes: "Closed"
+      number: "{{ chg_number }}"
+    register: change_result
+
+  - name: Create Incident
+    servicenow.itsm.incident:
+      instance:
+        host: "{{ instance }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+      number: "{{ change_result.record.short_description }}"
+    register: new_incident
+
+  - name: set stats
+    ansible.builtin.set_stats:
+      data:
+        inc_number: "{{ new_incident.record.number }}"
+        inc_sysid: "{{ new_incident.record.sys_id }}"
+    
+  

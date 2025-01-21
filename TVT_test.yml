@@ -1,0 +1,35 @@
+---
+- name: ServiceNow Create Incident
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  
+  tasks:
+    # - name: set stats
+    #   set_stats:
+    #     data:
+    #       hostname: "{{ ansible_facts['ansible_hostname'] }}"
+    #       url:  "{{ url }}"
+    - block:
+      - name: Execute TVT test
+        ansible.builtin.uri:
+          url: "{{ url }}"
+          method: "{{ uri_method }}"
+          return_content: true
+        register: uriresults
+      - ansible.builtin.debug:
+          var: uriresults
+
+      rescue:
+      - ansible.builtin.debug:
+          var: uriresults
+      - name: set stats
+        ansible.builtin.set_stats:
+          data:
+            error: "{{ uriresults.msg }}"
+            url: "{{ url }}"
+            inc_number: "{{ ansible_eda.event.number}}"
+            inc_sysid: "{{ ansible_eda.event.sys_id }}"
+      # - ansible.builtin.include_tasks: EDA_inputs.yml
+      - fail:
+          msg: "TVT Test Failure"

@@ -1,0 +1,25 @@
+---
+- name: test porkbun api
+  hosts: localhost
+
+  tasks:
+
+  - name: get DNS records
+    ansible.builtin.uri:
+      url: "https://porkbun.com/api/json/v3/dns/retrieve/{{ domain_name }}"
+      method: POST
+      return_content: true
+      body:
+        secretapikey: "{{ dns_secret_key }}"
+        apikey: "{{ dns_api_key }}"
+      body_format: json
+    register: results
+    
+  - name: set stats
+    ansible.builtin.set_stats:
+      data:
+        dns_name: "{{ domain_name }}"
+        
+  - name: print request results
+    debug:
+      var: results

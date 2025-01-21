@@ -1,0 +1,35 @@
+
+---
+- name: ServiceNow Create Incident
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  
+  tasks:
+
+  - name: set_facts
+    ansible.builtin.set_fact:
+      description: "{{ url }} - {{ error }}"
+      short: "{{ url }} - HTTPS TVT FAILURE"
+  - name: Create Incident
+    servicenow.itsm.incident:
+      instance:
+        host: "{{ instance }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+      state: new
+      short_description: "{{ short }}"
+      urgency: 2
+      impact: 2
+      description: 
+        "{{ description }}"
+      other:
+        assigned_to: Andrew Och
+        caller_id: AAP
+    register: new_incident
+
+  - name: set stats
+    ansible.builtin.set_stats:
+      data:
+        inc_number: "{{ new_incident.record.number }}"
+        inc_sysid: "{{ new_incident.record.sys_id }}"
