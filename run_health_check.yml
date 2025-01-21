@@ -1,0 +1,10 @@
+---
+- name: Install httpd web server
+  hosts: web_server
+  gather_facts: no
+
+  tasks:
+  - name: run healthcheck
+    ansible.builtin.include:_tasks:
+      file: playbooks/server.yml
+    

@@ -1,0 +1,72 @@
+- name: Check if port 80 is open
+  ansible.builtin.command:
+    cmd: "ss -tuln | grep ':80 '"
+  register: port_80_check
+  failed_when: port_80_check.rc != 0
+  ignore_errors: yes
+  changed_when: no
+
+- name: Ensure port 80 is open
+  ansible.builtin.debug:
+    msg: "Port 80 is {{ 'open' if port_80_check.rc == 0 else 'not open' }}."
+
+- name: Ping localhost
+  ansible.builtin.ping:
+
+- name: Check if httpd service is running
+  ansible.builtin.service:
+    name: httpd
+    state: started
+  register: httpd_service_check
+
+- name: Ensure httpd service status
+  ansible.builtin.debug:
+    msg: >
+      httpd service is {{ 'running' if httpd_service_check.state == 'started' else 'not running' }}.
+
+- name: Check disk space utilization
+  ansible.builtin.command:
+    cmd: "ansible.builtin.setup"
+  register: disk_space
+  changed_when: no
+
+- name: Validate disk space under 80% utilization
+  ansible.builtin.fail:
+    msg: "Disk space utilization exceeds 80% on some partitions."
+  when: "item.split(' ')[0]|int > 80"
+  with_items: "{{ disk_space.stdout_lines }}"
+
+- name: Check for critical messages in log file
+  ansible.builtin.lineinfile:
+    path: "/var/log/messages"
+    regexp: "CRITICAL"
+  register: critical_messages
+
+- name: Report critical messages
+  debug:
+    msg: |
+      {{ 'No critical messages found in /var/log/messages.' if critical_messages.rc == 1 else 'Critical messages found: ' + critical_messages.stdout }}
+
+- block:
+      - name: Execute TVT test
+        ansible.builtin.uri:
+          url: "{{ url }}"
+          method: "GET"
+          return_content: true
+        register: uriresults
+      - ansible.builtin.debug:
+          var: uriresults
+
+      rescue:
+      - ansible.builtin.debug:
+          var: uriresults
+      - name: set stats
+        ansible.builtin.set_stats:
+          data:
+            error: "{{ uriresults.msg }}"
+            url: "{{ url }}"
+            inc_number: "{{ ansible_eda.event.number}}"
+            inc_sysid: "{{ ansible_eda.event.sys_id }}"
+      # - ansible.builtin.include_tasks: EDA_inputs.yml
+      - fail:
+          msg: "TVT Test Failure"
