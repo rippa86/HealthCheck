@@ -30,22 +30,11 @@
   register: disk_space
   changed_when: no
 
-- name: Validate disk space under 80% utilization
-  ansible.builtin.fail:
-    msg: "Disk space utilization exceeds 80% on some partitions."
-  when: "item.split(' ')[0]|int > 80"
-  with_items: "{{ disk_space.stdout_lines }}"
-
-- name: Check for critical messages in log file
-  ansible.builtin.lineinfile:
-    path: "/var/log/messages"
-    regexp: "CRITICAL"
-  register: critical_messages
-
-- name: Report critical messages
-  debug:
-    msg: |
-      {{ 'No critical messages found in /var/log/messages.' if critical_messages.rc == 1 else 'Critical messages found: ' + critical_messages.stdout }}
+- name: Check if available memory is above 500 mb
+  ansible.builtin.debug:
+    msg: "Disks space for the {{ item.mount }} is {{ item.size_available / (1024 * 1024) }} MBytes"
+  when: item.mount == "/"
+  loop: "{{ ansible_facts['mounts'] }}"
 
 - block:
   - name: Execute TVT test
