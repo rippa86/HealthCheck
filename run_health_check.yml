@@ -5,6 +5,6 @@
 
   tasks:
   - name: run healthcheck
-    ansible.builtin.include:_tasks:
+    ansible.builtin.include_tasks:
       file: playbooks/server.yml
     
