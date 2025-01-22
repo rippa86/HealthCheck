@@ -1,0 +1,10 @@
+---
+- name: Install httpd web server
+  hosts: web_server
+  gather_facts: no
+
+  tasks:    
+  - name: add index.html
+    ansible.builtin.template:
+      src: healthchecknew.html.j2
+      dest: /var/www/html/healthcheck.html
