@@ -14,7 +14,7 @@
       - name: Execute TVT test
         ansible.builtin.uri:
           url: "{{ url }}"
-          method: "{{ uri_method }}"
+          method: "GET"
           return_content: true
         register: uriresults
       - ansible.builtin.debug:
