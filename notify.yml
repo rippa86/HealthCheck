@@ -4,7 +4,7 @@
 
   tasks:
   - ansible.builtin.set_fact:
-      message: "{{ inc_number }} - {{ url }} Certificate test Failure, Change created automatically for remedication: {{ chg_number }}"
+      message: "[{{ inc_number }}](https://dev198169.service-now.com/nav_to.do?uri=incident.do?sys_id={{ inc_sysid }}) - {{ url }} Certificate Expired or non existant"
   - name: Post URL to Slack channel
     community.general.slack:
       token: "{{ slack_token }}"

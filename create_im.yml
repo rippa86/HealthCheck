@@ -10,7 +10,7 @@
   - name: set_facts
     ansible.builtin.set_fact:
       description: "{{ url }} - {{ error }}"
-      short: "{{ url }} - HTTPS TVT FAILURE"
+      short: "{{ url }} - HTTPS Front End Failure"
   - name: Create Incident
     servicenow.itsm.incident:
       instance:
