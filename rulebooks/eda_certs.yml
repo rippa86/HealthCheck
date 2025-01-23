@@ -18,7 +18,7 @@
         #- run_job_template:
         - run_workflow_template:
             organization: "Default"
-            name: "TVT Tests"
+            name: "Self Healing Workflow"
     - name: Debug everything else
       condition: event.cmdb_ci is not defined
       action:
