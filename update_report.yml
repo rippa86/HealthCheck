@@ -1,0 +1,14 @@
+---
+- name: Update 
+  hosts: web_server
+
+  tasks:
+  - name: Find and replace color code in files
+    ansible.builtin.replace:
+      path: /var/www/html/healthcheck.html
+      regexp: "#dc3545"
+      replace: "#28a745"
+  - name: Restart Apache
+    ansible.builtin.service:
+      name: httpd
+      state: restarted
