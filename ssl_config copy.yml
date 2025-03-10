@@ -1,7 +1,7 @@
 ---
 - name: Set up SSL and point to new certs
   hosts: servers
-
+  become: yes
   tasks:
   - name: restart httpd
     ansible.builtin.service:
