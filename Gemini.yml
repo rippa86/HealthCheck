@@ -1,0 +1,51 @@
+---
+- name: Send Gemini API Request
+  hosts: localhost # Or a specific host if needed
+  connection: local
+  gather_facts: false
+  vars:
+    api_key: "{{ gemini_key }}" # Replace with your actual API key
+    api_url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" # Replace with the correct Gemini API endpoint
+    prompt: "I'm getting the following error when attempting to ping my website. Its running on RHEL and using HTTPD. error: Status code was -1 and not [200]: Request failed: <urlopen error [Errno 111] Connection refused> provide troubleshooting in 100 words or less Start with Gemini Response:" # Example prompt
+    model: "gemini-pro" # Or your chosen Gemini model
+
+  tasks:
+    - name: Construct API Request Data
+      set_fact:
+        request_data:
+          contents:
+            - parts:
+                - text: "{{ prompt }}"
+
+    - name: Send Gemini API Request
+      uri:
+        url: "{{ api_url }}"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          x-goog-api-key: "{{ api_key }}"
+        body_format: json
+        body: "{{ request_data | to_json }}"
+        status_code: 200, 201 # Adjust as needed
+      register: api_response
+
+    - name: Extract Gemini Response Text
+      set_fact:
+        gemini_text: "{{ api_response.json | json_query('candidates[0].content.parts[0].text') }}"
+
+    - name: Display Extracted Text
+      debug:
+        var: gemini_text
+
+    - name: Update ServiceNow ticket to indicate start
+      servicenow.itsm.api:
+        instance:
+          host: "{{ instance }}"
+          username: "{{ username }}"
+          password: "{{ password }}"
+        resource: incident
+        action: patch
+        sys_id: "{{ inc_sysid }}"
+        data:
+          work_notes: "{{ gemini_text }}"
+      register: snow_var
