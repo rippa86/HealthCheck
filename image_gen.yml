@@ -5,7 +5,7 @@
 
   # Variables
   vars:
-    image_description: ""{{ image_description }}" # Your desired image prompt
+    image_description: "{{ image_description }}" # Your desired image prompt
     image_filename: "gemini.png" # Desired filename on the webserver
     web_root: "/var/www/html" # Standard Apache document root on RHEL/CentOS/Fedora. Adjust if needed (e.g., /var/www/html for Debian/Ubuntu)
     # --- IMPORTANT: Gemini API details (These are illustrative - CHECK DOCUMENTATION!) ---
@@ -37,7 +37,7 @@
 
     - name: Generate image using Gemini API
       ansible.builtin.uri:
-        url: "{{ gemini_api_endpoint }}?key={{ gemini_api_key }}" # API key often passed as query param or header
+        url: "{{ gemini_api_endpoint }}?key={{ gemini_key }}" # API key often passed as query param or header
         method: POST
         body: "{{ gemini_request_body | to_json }}"
         body_format: json
