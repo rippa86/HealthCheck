@@ -14,7 +14,7 @@
     # The structure of the request body depends heavily on the specific Gemini model/API version
     gemini_request_body: # Example Body Structure - **Verify This!**
       instances:
-        - prompt: "Robot holding a red skateboard"
+        - prompt: "{{ image_description }}"
       parameters:
         sampleCount: 4
 
