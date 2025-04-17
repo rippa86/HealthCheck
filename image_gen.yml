@@ -1,0 +1,90 @@
+---
+- name: Generate image with Gemini and deploy to httpd
+  hosts: servers # Replace with your target host
+  become: yes # Needed for package install, service management, copying to /var/www/html
+
+  # Variables
+  vars:
+    image_description: ""{{ image_description }}" # Your desired image prompt
+    image_filename: "gemini.png" # Desired filename on the webserver
+    web_root: "/var/www/html" # Standard Apache document root on RHEL/CentOS/Fedora. Adjust if needed (e.g., /var/www/html for Debian/Ubuntu)
+    # --- IMPORTANT: Gemini API details (These are illustrative - CHECK DOCUMENTATION!) ---
+    # Replace with the correct endpoint and model for image generation
+    gemini_api_endpoint: "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict" #"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent" # Example Endpoint - **Verify This!**
+    # The structure of the request body depends heavily on the specific Gemini model/API version
+    gemini_request_body: # Example Body Structure - **Verify This!**
+      contents:
+        - role: user
+          parts:
+            - text: "{{ image_description }}"
+    # This structure might be completely different for image generation!
+
+  # Load vaulted secrets
+  vars_files:
+    - secrets.yml # Contains gemini_api_key
+
+  tasks:
+    - name: Ensure httpd is installed
+      ansible.builtin.package:
+        name: httpd
+        state: present
+
+    - name: Ensure httpd is running and enabled
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Generate image using Gemini API
+      ansible.builtin.uri:
+        url: "{{ gemini_api_endpoint }}?key={{ gemini_api_key }}" # API key often passed as query param or header
+        method: POST
+        body: "{{ gemini_request_body | to_json }}"
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        return_content: yes # Get the response body
+        status_code: 200 # Expect a successful response
+      register: gemini_response
+      # --- IMPORTANT Error Handling ---
+      # Add more robust error checking based on expected API responses
+      failed_when: >
+        'candidates' not in gemini_response.json or
+        'content' not in gemini_response.json.candidates[0] or
+        'parts' not in gemini_response.json.candidates[0].content or
+        'inlineData' not in gemini_response.json.candidates[0].content.parts[0] or # Assuming base64 is in inlineData
+        'data' not in gemini_response.json.candidates[0].content.parts[0].inlineData
+
+    # --- DEBUGGING: Show the raw response (optional) ---
+    # - name: Display Gemini API Response structure (for debugging)
+    #   ansible.builtin.debug:
+    #     var: gemini_response.json
+
+    # --- Placeholder for actual image data extraction ---
+    # The 'json_query' below is HIGHLY HYPOTHETICAL. You MUST inspect the actual
+    # Gemini API response for image generation to find the correct path to the base64 data.
+    # Example assumes response structure like: { "candidates": [ { "content": { "parts": [ { "inlineData": { "mimeType": "image/png", "data": "BASE64_STRING_HERE" } } ] } } ] }
+    - name: Extract base64 image data (adjust json_query based on actual API response)
+      ansible.builtin.set_fact:
+        image_data_base64: "{{ gemini_response.json | community.general.json_query('candidates[0].content.parts[0].inlineData.data') }}"
+      when: gemini_response.json is defined # Only run if response seems valid
+
+    - name: Decode base64 data and save image to web server
+      ansible.builtin.copy:
+        content: "{{ image_data_base64 | b64decode }}" # Decode base64 content
+        dest: "{{ web_root }}/{{ image_filename }}" # Destination path on the web server
+        owner: apache # Or www-data for Debian/Ubuntu
+        group: apache # Or www-data for Debian/Ubuntu
+        mode: '0644'
+      when: image_data_base64 is defined and image_data_base64 | length > 0
+
+    - name: Verify image deployment
+      ansible.builtin.uri:
+        url: "http://localhost/{{ image_filename }}" # Check locally on the server first
+        method: GET
+        status_code: 200
+      delegate_to: "{{ inventory_hostname }}" # Run this check on the target web server
+
+    - name: Output image URL
+      ansible.builtin.debug:
+        msg: "Image should be available at: http://{{ inventory_hostname }}/{{ image_filename }}" # Use inventory_hostname for the public IP/DNS if configured
