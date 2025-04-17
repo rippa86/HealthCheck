@@ -10,13 +10,16 @@
     web_root: "/var/www/html" # Standard Apache document root on RHEL/CentOS/Fedora. Adjust if needed (e.g., /var/www/html for Debian/Ubuntu)
     # --- IMPORTANT: Gemini API details (These are illustrative - CHECK DOCUMENTATION!) ---
     # Replace with the correct endpoint and model for image generation
-    gemini_api_endpoint: "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict" #"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent" # Example Endpoint - **Verify This!**
+    gemini_api_endpoint: ""https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent"
     # The structure of the request body depends heavily on the specific Gemini model/API version
     gemini_request_body: # Example Body Structure - **Verify This!**
-      instances:
-        - prompt: "{{ image_description }}"
-      parameters:
-        sampleCount: 4
+      contents:
+        - parts:
+            - text: "{{ image_description }}"
+      generationConfig:
+        responseModalities:
+          - "TEXT"
+          - "IMAGE"
 
     # This structure might be completely different for image generation!
 
