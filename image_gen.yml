@@ -13,10 +13,11 @@
     gemini_api_endpoint: "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict" #"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent" # Example Endpoint - **Verify This!**
     # The structure of the request body depends heavily on the specific Gemini model/API version
     gemini_request_body: # Example Body Structure - **Verify This!**
-      contents:
-        - role: user
-          parts:
-            - text: "{{ image_description }}"
+      instances:
+        - prompt: "Robot holding a red skateboard"
+      parameters:
+        sampleCount: 4
+
     # This structure might be completely different for image generation!
 
   # Load vaulted secrets
