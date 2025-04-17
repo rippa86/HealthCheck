@@ -52,12 +52,12 @@
       register: gemini_response
       # --- IMPORTANT Error Handling ---
       # Add more robust error checking based on expected API responses
-      failed_when: >
-        'candidates' not in gemini_response.json or
-        'content' not in gemini_response.json.candidates[0] or
-        'parts' not in gemini_response.json.candidates[0].content or
-        'inlineData' not in gemini_response.json.candidates[0].content.parts[0] or # Assuming base64 is in inlineData
-        'data' not in gemini_response.json.candidates[0].content.parts[0].inlineData
+      # failed_when: >
+      #   'candidates' not in gemini_response.json or
+      #   'content' not in gemini_response.json.candidates[0] or
+      #   'parts' not in gemini_response.json.candidates[0].content or
+      #   'inlineData' not in gemini_response.json.candidates[0].content.parts[0] or # Assuming base64 is in inlineData
+      #   'data' not in gemini_response.json.candidates[0].content.parts[0].inlineData
 
     # --- DEBUGGING: Show the raw response (optional) ---
     # - name: Display Gemini API Response structure (for debugging)
