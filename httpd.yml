@@ -31,7 +31,7 @@
     ansible.builtin.template:
       src: "{{ dns_name }}.conf.j2"
       dest: /etc/httpd/conf.d/{{ dns_name }}.conf
-    when: certs == true
+    when: certs
 
   - name: httpd running
     ansible.builtin.service:
