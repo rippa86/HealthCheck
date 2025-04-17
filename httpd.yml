@@ -1,0 +1,45 @@
+---
+- name: Install httpd web server
+  hosts: "{{ hosts }}"
+  gather_facts: no
+
+  tasks:
+  - name: enable EPEL repo
+    ansible.builtin.dnf:
+      disable_gpg_check: true
+      name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm"
+      state: present
+
+  - name: install httpd
+    ansible.builtin.dnf:
+      name: httpd
+      state: latest 
+    retries: 30
+    delay: 3
+
+  - name: add index.html
+    ansible.builtin.template:
+      src: "{{ template_src }}.html.j2"
+      dest: /var/www/html/index.html
+      
+  - name: add index.html
+    ansible.builtin.template:
+      src: healthcheck.html.j2
+      dest: /var/www/html/healthcheck.html
+
+  - name: add rippademo.conf
+    ansible.builtin.template:
+      src: "{{ dns_name }}.conf.j2"
+      dest: /etc/httpd/conf.d/{{ dns_name }}.conf
+    when: certs == true
+
+  - name: httpd running
+    ansible.builtin.service:
+      name: httpd
+      enabled: true
+      state: started
+  
+   # Install apache webserver & open firewall port 80 for the webserver &  create a custom index.html file that has "I'm a custom website" as content & start the service
+   
+
+
